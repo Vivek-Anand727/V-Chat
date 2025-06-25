@@ -1,0 +1,16 @@
+# node_modules folder ignore karega
+node_modules/
+
+# .env file ignore karega
+.env
+
+# build folder ignore karega
+dist/
+build/
+
+# log files ignore
+*.log
+
+# OS related files
+.DS_Store
+Thumbs.db
