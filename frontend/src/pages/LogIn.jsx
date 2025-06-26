@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { serverUrl } from '../main.jsx'
+import { useDispatch, useSelector } from 'react-redux';
+import { setUserData } from '../redux/userSlice.js';
 
 function LogIn() {
   const navigate = useNavigate();
@@ -10,6 +12,9 @@ function LogIn() {
   let[password,setPassword] = useState("");
   let[loading,setLoading] = useState(false);
   let[err,setErr] = useState("");
+  let dispatch = useDispatch();
+  let {userData} = useSelector((state)=>state.user);
+  console.log(userData);
 
   const handleLogin = async(e)=>{
     e.preventDefault();
@@ -21,7 +26,7 @@ function LogIn() {
                 password
             },{withCredentials:true}
         )
-        console.log(result);
+        dispatch(setUserData(result.data.user));
         setLoading(false);
         setEmail("");
         setPassword("");
@@ -74,8 +79,8 @@ function LogIn() {
             disabled={loading}
             className="w-11/12 h-14 bg-[#20c7ff] hover:bg-[#1ab0e6] text-white font-semibold text-lg rounded-lg shadow transition-all"
           >
-            Log In
-          </button>
+            {loading ? "Loading..." : "Log In"}
+            </button>
         </form>
 
         <p className="text-sm text-gray-600">
@@ -84,7 +89,7 @@ function LogIn() {
             onClick={() => navigate("/signup")}
             className="text-[#20c7ff] font-medium cursor-pointer hover:underline"
           >
-            {loading ? "Loading..." : "Log In"}
+          Sign Up
             </span>
         </p>
       </div>
