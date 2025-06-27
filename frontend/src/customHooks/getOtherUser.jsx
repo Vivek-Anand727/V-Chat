@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import axios from "axios"
-import { setUserData } from "../redux/userSlice"
+import { setOtherUsers, setUserData } from "../redux/userSlice"
 import { serverUrl } from "../main"
 
-const getCurrentUser = () => {
+const getOtherUsers = () => {
     const dispatch = useDispatch();
     const { userData } = useSelector((state) => state.user);
     const [loading, setLoading] = useState(false);
@@ -18,10 +18,10 @@ const getCurrentUser = () => {
             setError(null);
 
             try {
-                const result = await axios.get(`${serverUrl}/api/user/current`, {
+                const result = await axios.get(`${serverUrl}/api/user/others`, {
                     withCredentials: true
                 });
-                dispatch(setUserData(result.data));
+                dispatch(setOtherUsers(result.data));
             } catch (error) {
                 console.error("Current User Error:", error);
                 
@@ -38,9 +38,9 @@ const getCurrentUser = () => {
         };
 
         fetchUser();
-    }, []); 
+    }, [userData]); 
 
     return { userData, loading, error };
 };
 
-export default getCurrentUser;
+export default getOtherUsers;

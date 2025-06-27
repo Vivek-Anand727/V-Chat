@@ -26,7 +26,7 @@ function Profile() {
     setFrontendImage(URL.createObjectURL(file));
   }
 
-  const handleProfile = (e)=>{
+  const handleProfile = async (e)=>{
     e.preventDefault();
     setSaving(true);
     try {
@@ -35,10 +35,10 @@ function Profile() {
       if(backendImage){
         formData.append("image",backendImage);
       }
-      const result = axios.put(`${serverUrl}/api/user/profile`,formData,{withCredentials:true});
+      const result = await axios.put(`${serverUrl}/api/user/profile`,formData,{withCredentials:true});
       setSaving(false);
       dispatch(setUserData(result.data));
-    
+      navigate("/");
     } catch (error) {
       console.log(error);
       setSaving(false);
@@ -55,7 +55,7 @@ function Profile() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg flex flex-col items-center p-6 gap-6 relative">
 
         <div className="w-full h-48 bg-[#20c7ff] rounded-b-[40%] flex flex-col items-center justify-center shadow-md">
-          <div className="relative">
+          <div className="relative cursor-pointer">
             <img
               src={frontendImage}
               alt="profile"

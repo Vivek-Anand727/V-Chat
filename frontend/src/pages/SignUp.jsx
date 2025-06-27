@@ -33,6 +33,7 @@ function SignUp() {
         setUsername("");
         setPassword("");
         setErr("");
+        navigate("/profile");
     } catch (error) {
         console.log(error);
         setLoading(false);

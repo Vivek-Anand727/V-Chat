@@ -6,10 +6,12 @@ import Profile from './pages/Profile.jsx'
 import Home from './pages/Home.jsx'
 import getCurrentUser from './customHooks/getCurrentUser.jsx'
 import { useSelector } from 'react-redux'
+import getOtherUsers from './customHooks/getOtherUser.jsx'
 
 function App() {
   getCurrentUser();
   let {userData} = useSelector((state)=>state.user);
+  getOtherUsers();
   return (
     <Routes>
       <Route path="/login" element={!userData?<LogIn/> : <Navigate to="/"/>} />

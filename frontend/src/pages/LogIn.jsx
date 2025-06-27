@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { serverUrl } from '../main.jsx'
 import { useDispatch, useSelector } from 'react-redux';
-import { setUserData } from '../redux/userSlice.js';
+import { setSelectedUser, setUserData } from '../redux/userSlice.js';
 
 function LogIn() {
   const navigate = useNavigate();
@@ -14,7 +14,6 @@ function LogIn() {
   let[err,setErr] = useState("");
   let dispatch = useDispatch();
   let {userData} = useSelector((state)=>state.user);
-  console.log(userData);
 
   const handleLogin = async(e)=>{
     e.preventDefault();
@@ -27,10 +26,12 @@ function LogIn() {
             },{withCredentials:true}
         )
         dispatch(setUserData(result.data.user));
+        dispatch(setSelectedUser(null));
         setLoading(false);
         setEmail("");
         setPassword("");
         setErr("");
+        navigate("/");
     } catch (error) {
         console.log(error);
         setLoading(false);
