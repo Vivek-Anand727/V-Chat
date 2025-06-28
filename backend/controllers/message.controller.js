@@ -1,6 +1,7 @@
 import Conversation from "../models/conversation.model.js";
 import Message from "../models/message.model.js";
 import uploadOnCloudinary  from "../config/cloudinary.js";
+import { getReceiverSocketId, io } from "../socket/socket.js";
 
 
 export const sendMessage = async (req, res) => {
@@ -35,6 +36,12 @@ export const sendMessage = async (req, res) => {
         await conversation.save();
       }
   
+      const receiverSocketId = getReceiverSocketId(receiver);
+  
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("newMessage", newMessage);
+      }
+
       return res.status(201).json(newMessage);
   
     } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   HiArrowLeft,
@@ -17,7 +17,7 @@ import { setMessages } from "../redux/messageSlice";
 
 function MessageArea() {
   const dispatch = useDispatch();
-  const { selectedUser, userData } = useSelector((state) => state.user);
+  const { selectedUser, userData, socket, onlineUsers} = useSelector((state) => state.user);
   const messages = useSelector((state) => state.message.messages) || [];
 
   const [showPicker, setShowPicker] = useState(false);
@@ -27,8 +27,12 @@ function MessageArea() {
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  useLayoutEffect(() => {
+    if (messagesEndRef.current) {
+      requestAnimationFrame(() => {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      });
+    }
   }, [messages]);
 
   useGetMessage(selectedUser);
@@ -75,6 +79,16 @@ function MessageArea() {
       console.error("Send error:", error);
     }
   };
+
+  useLayoutEffect(() => {
+    if (!socket) return;
+    const handleNewMessage = (data) => {
+      dispatch(setMessages([...messages, data]));
+    };
+
+    socket.on("newMessage", handleNewMessage);
+    return () => socket.off("newMessage", handleNewMessage);
+  }, [socket, dispatch, messages]);
 
   return (
     <div className="lg:w-[70%] w-full h-full flex flex-col bg-gray-50">
@@ -231,3 +245,5 @@ function MessageArea() {
 }
 
 export default MessageArea;
+
+

@@ -11,39 +11,48 @@ import { useNavigate } from "react-router-dom";
 import { setMessages } from "../redux/messageSlice";
 
 function SideBar() {
-  const { userData, otherUsers } = useSelector((state) => state.user);
+  const { userData, otherUsers, onlineUsers } = useSelector((state) => state.user);
   const [search, setSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${serverUrl}/api/auth/logout`, null, {
-        withCredentials: true,
-      });
+      await axios.post(`${serverUrl}/api/auth/logout`, null, { withCredentials: true });
       dispatch(setUserData(null));
       dispatch(setOtherUsers(null));
       navigate("/login");
-    } catch (error) {
-      console.error("Logout Error:", error);
-    }
+    } catch (error) {}
   };
 
   const handleSelectUser = async (user) => {
-    const selected = {
-      ...user,
-      _id: user._id || user.id,
-    };
+    const selected = { ...user, _id: user._id || user.id };
     dispatch(setSelectedUser(selected));
-
     try {
-      const res = await axios.get(`${serverUrl}/api/message/get/${selected._id}`, {
-        withCredentials: true,
-      });
+      const res = await axios.get(`${serverUrl}/api/message/get/${selected._id}`, { withCredentials: true });
       dispatch(setMessages(res.data));
-    } catch (err) {
-      console.error("Error fetching messages:", err);
-    }
+    } catch (err) {}
+  };
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    try {
+      const res = await axios.get(`${serverUrl}/api/user/search?q=${encodeURIComponent(searchQuery)}`, {
+        withCredentials: true
+      });
+      dispatch(setOtherUsers(res.data));
+    } catch (error) {}
+  };
+
+  const resetSearch = async () => {
+    setSearch(false);
+    setSearchQuery("");
+    try {
+      const res = await axios.get(`${serverUrl}/api/user/others`, { withCredentials: true });
+      dispatch(setOtherUsers(res.data));
+    } catch (error) {}
   };
 
   return (
@@ -73,44 +82,56 @@ function SideBar() {
             <BsSearch />
           </div>
         ) : (
-          <form className="flex items-center gap-2 bg-white px-3 py-2 rounded-full shadow w-full min-w-0">
+          <form
+            onSubmit={handleSearch}
+            className="flex items-center gap-2 bg-white px-3 py-2 rounded-full shadow w-full min-w-0"
+          >
             <BsSearch className="text-[#20c7ff] text-xl" />
             <input
               type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search..."
               className="w-full outline-none text-gray-800 bg-transparent"
             />
-            <RxCross2
-              onClick={() => setSearch(false)}
-              className="text-[#20c7ff] text-2xl cursor-pointer"
-            />
+            <RxCross2 onClick={resetSearch} className="text-[#20c7ff] text-2xl cursor-pointer" />
           </form>
         )}
 
         <div className="flex gap-3 mt-2">
-          {otherUsers?.slice(0, 3).map((user, index) => (
-            <img
-              key={index}
-              src={user.image || dp}
-              alt={user.userName}
-              className="w-10 h-10 rounded-full border-2 border-white object-cover shadow"
-            />
-          ))}
+          {otherUsers
+            ?.filter(u => onlineUsers?.includes(u._id))
+            .slice(0, 3)
+            .map((user, index) => (
+              <div key={index} className="relative w-10 h-10">
+                <img
+                  src={user.image || dp}
+                  alt={user.userName}
+                  className="w-10 h-10 rounded-full border-2 border-white object-cover shadow"
+                />
+                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+              </div>
+            ))}
         </div>
       </div>
 
-      <div className="bg-white shadow-lg p-4 flex flex-col gap-4">
+      <div className="bg-white shadow-lg p-4 flex flex-col gap-4 overflow-y-auto">
         {otherUsers?.map((user, index) => (
           <div
             key={index}
             onClick={() => handleSelectUser(user)}
             className="flex items-center gap-3 hover:bg-gray-100 p-2 rounded-lg cursor-pointer transition"
           >
-            <img
-              src={user.image || dp}
-              alt={user.userName}
-              className="w-10 h-10 rounded-full border object-cover shadow"
-            />
+            <div className="relative">
+              <img
+                src={user.image || dp}
+                alt={user.userName}
+                className="w-10 h-10 rounded-full border object-cover shadow"
+              />
+              {onlineUsers?.includes(user._id) && (
+                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+              )}
+            </div>
             <span className="font-semibold text-gray-800">
               {user.name || user.userName}
             </span>

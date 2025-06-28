@@ -52,3 +52,22 @@ export const getOtherUsers = async(req, res) => {
         return res.status(500).json({message:"Get Other Users Error"});
     }
 }
+
+export const search = async (req, res) => {
+    try {
+      const query = req.query.q;
+      if (!query) {
+        return res.status(400).json({ message: "Please enter a search query" });
+      }
+      const users = await User.find({
+        $or: [
+          { name: { $regex: query, $options: "i" } },
+          { userName: { $regex: query, $options: "i" } }
+        ],
+        _id: { $ne: req.userId }
+      }).select("-password");
+      return res.status(200).json(users);
+    } catch (error) {
+      return res.status(500).json({ message: "Search Error" });
+    }
+  };
