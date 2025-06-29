@@ -12,10 +12,13 @@ dotenv.config();
 
 const port = process.env.PORT || 5000;
 
-app.use(cors ({
+app.use(cors({
     origin: ["https://v-chat-frontend.onrender.com"],
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
+
 app.use(express.json());
 app.use(cookieParser());
 
